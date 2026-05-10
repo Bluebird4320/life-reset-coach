@@ -1,50 +1,239 @@
-# Welcome to your Expo app 👋
+# Life Reset Coach
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Life Reset Coach** は、ユーザーが「叶えたい将来」に向かって毎日の行動を整えるための、AI伴走型セルフコーチングアプリです。
 
-## Get started
+目標を立てるだけで終わらせず、日々の行動・振り返り・方向性のズレを分かりやすく可視化し、次に取るべき小さな一歩まで落とし込むことを目的としています。
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## このアプリで解決したい課題
 
-2. Start the app
+多くの人は、将来なりたい姿や叶えたい目標を持っていても、日々の忙しさの中で次のような状態になりがちです。
 
-   ```bash
-   npx expo start
-   ```
+- 目標はあるが、今日何をすればいいか分からない
+- 頑張っているつもりでも、将来に近づいている実感がない
+- 行動が目標とズレていても、自分では気づきにくい
+- 振り返りが面倒で続かない
+- 習慣化アプリやタスク管理アプリを入れても長続きしない
 
-In the output, you'll find options to open the app in a
+Life Reset Coach は、こうした課題に対して、**「目標」「今日の行動」「振り返り」「AIからの助言」「キャラクターによる状態表示」** を組み合わせて、継続しやすい形で支援します。
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## アプリのコンセプト
 
-## Get a fresh project
+### 1. 誰でも簡単に使える
 
-When you're ready, run:
+専門的な設定や複雑な入力はできるだけ減らし、初めて使う人でも直感的に操作できるUIを目指します。
+
+### 2. 長く使いたくなる
+
+単なるタスク管理ではなく、ドット絵の可愛らしいキャラクター演出や、短く前向きなAIメッセージによって、毎日開きたくなる体験を作ります。
+
+### 3. 将来に向かっているかを見える化する
+
+ユーザーの行動が、叶えたい将来に近づいているのか、それともズレているのかを分かりやすく表示します。
+
+### 4. AIは説教役ではなく伴走者
+
+AIはユーザーを責めるのではなく、振り返りを整理し、次の一歩を一緒に考えるコーチとして機能します。
+
+---
+
+## 主要機能
+
+### 目標設定
+
+ユーザーが叶えたい将来像や達成したい目標を登録します。
+
+例：
+
+- 副業で月5万円を達成したい
+- 健康的な生活習慣を作りたい
+- 毎日学習してアプリ開発スキルを高めたい
+- 仕事で成果を出せる人になりたい
+
+### 今日の行動チェック
+
+目標に対して、今日実行する小さな行動を登録・確認します。
+
+大きな目標をそのまま扱うのではなく、毎日の小さな行動に分解することで、継続しやすくします。
+
+### 振り返り
+
+その日の行動や気づきを簡単に記録します。
+
+振り返り内容は、AIが整理し、次の行動提案や改善ポイントに活用します。
+
+### AIコーチング
+
+AIがユーザーの目標・行動・振り返りをもとに、短く実行しやすい助言を返します。
+
+AIの出力では、以下を重視します。
+
+- 責めない
+- 抽象論で終わらない
+- 今日または明日できる行動に落とす
+- ユーザーの目標との関係を明確にする
+- 不確実なことは断定しない
+
+### 天使・悪魔の状態表示
+
+ホーム画面では、ユーザーの行動状態に応じて、可愛らしいドット絵キャラクターを表示します。
+
+- 目標に向かえている時：天使を表示
+- 目標と反する行動や停滞がある時：悪魔を表示
+
+悪魔はユーザーを責める存在ではありません。あくまで「少し方向がズレているかも」とやさしく気づかせるサインです。
+
+---
+
+## 想定ユーザー
+
+このアプリは、以下のような人に向いています。
+
+- 叶えたい将来はあるが、日々の行動に落とし込めていない人
+- 自分の行動が目標に近づいているか確認したい人
+- 振り返りや習慣化を続けるのが苦手な人
+- AIを使って自己改善や目標達成を進めたい人
+- タスク管理アプリよりも、やさしく伴走してくれるアプリを使いたい人
+
+---
+
+## 画面イメージ
+
+### ホーム画面
+
+ユーザーが最初に見る画面です。
+
+表示する内容の例：
+
+- 今日の状態
+- 天使または悪魔のドット絵キャラクター
+- 今日やること
+- 目標への進捗
+- AIからの短い一言
+
+### 目標設定画面
+
+叶えたい将来像や目標を登録・編集する画面です。
+
+### 行動チェック画面
+
+今日やる行動を確認し、完了状態を記録する画面です。
+
+### 振り返り画面
+
+その日の行動、気づき、できたこと、改善したいことを記録する画面です。
+
+### 履歴・進捗画面
+
+過去の行動や振り返りを確認し、自分の変化を見える化する画面です。
+
+---
+
+## 使用技術
+
+現時点では、以下の構成を前提とします。
+
+- Expo
+- React Native
+- TypeScript
+- Expo Go
+- 将来的にAI API連携を想定
+
+詳細な開発ルールは [`AGENTS.md`](./AGENTS.md) を参照してください。
+
+---
+
+## 開発方針
+
+### 小さく作る
+
+最初から多機能にせず、毎日使うために必要な最小機能から作ります。
+
+### 使いやすさを優先する
+
+機能が多いことよりも、迷わず使えることを優先します。
+
+### 壊れにくくする
+
+後から修正・拡張しやすいように、UI・ロジック・データ保存をできるだけ分離します。
+
+### AIに依存しすぎない
+
+AIがなくても基本的な記録・確認ができる設計にします。AIは体験を強化する補助機能として扱います。
+
+---
+
+## 最初に作るMVP
+
+初期版では、以下を優先して実装します。
+
+1. ホーム画面
+2. 目標登録
+3. 今日の行動チェック
+4. 簡単な振り返り
+5. 天使・悪魔の状態表示
+6. ローカル保存
+
+AI連携や高度な分析は、基本体験が固まってから追加します。
+
+---
+
+## 将来的に追加したい機能
+
+- AIによる行動改善提案
+- 目標とのズレ検知
+- 週間・月間レポート
+- 習慣化スコア
+- キャラクターの成長要素
+- 通知・リマインダー
+- クラウド同期
+- ウィジェット対応
+- LINEや外部ツールとの連携
+
+---
+
+## 開発時の基本コマンド
+
+依存関係のインストール：
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+開発サーバー起動：
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Expo Goで確認する場合は、ターミナルに表示されたQRコードをスマートフォンで読み取ります。
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
+## Git運用
 
-Join our community of developers creating universal apps.
+このプロジェクトでは、ファイル作成・修正後に、原則としてGitHubへコミット・pushします。
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+基本の流れ：
+
+```bash
+git status
+git add <変更したファイル>
+git commit -m "type: 変更内容"
+git push
+```
+
+詳細な運用ルールは [`AGENTS.md`](./AGENTS.md) の「作業完了時の保存・コミット運用ルール」を参照してください。
+
+---
+
+## このリポジトリを見る人へ
+
+Life Reset Coach は、単なるタスク管理アプリではありません。
+
+ユーザーが自分の未来に向かっているかを毎日確認し、必要な時にはやさしく軌道修正し、行動を続けるためのアプリです。
+
+「目標を立てる」だけではなく、**日々の行動を変えること** を重視しています。
