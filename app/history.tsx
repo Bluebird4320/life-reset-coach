@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { BackButton } from '../components/BackButton';
 import { PrimaryButton } from '../components/PrimaryButton';
 import type { DailyLog } from '../types';
 import { loadAllLogs } from '../utils/storage';
@@ -42,6 +43,7 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <BackButton />
         <View style={styles.header}>
           <Text style={styles.title}>📅 振り返り履歴</Text>
           <Text style={styles.subtitle}>{logs.length}件の記録</Text>

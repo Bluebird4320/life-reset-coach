@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { BackButton } from '../components/BackButton';
 import { Card } from '../components/Card';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ToggleChip } from '../components/ToggleChip';
@@ -104,6 +105,7 @@ export default function NightReviewScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          <BackButton />
           <View style={styles.header}>
             <Text style={styles.emoji}>🌙</Text>
             <Text style={styles.title}>夜の振り返り</Text>

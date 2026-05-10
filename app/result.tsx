@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { BackButton } from '../components/BackButton';
 import { Card } from '../components/Card';
 import { FutureCompassCard } from '../components/FutureCompassCard';
 import { PrimaryButton } from '../components/PrimaryButton';
@@ -46,6 +47,7 @@ export default function ResultScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <BackButton />
         <View style={styles.header}>
           <Text style={styles.title}>今日の振り返り結果</Text>
         </View>

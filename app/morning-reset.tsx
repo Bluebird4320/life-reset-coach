@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { BackButton } from '../components/BackButton';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ToggleChip } from '../components/ToggleChip';
 import type { FutureVision } from '../types';
@@ -77,6 +78,7 @@ export default function MorningResetScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          <BackButton />
           <View style={styles.header}>
             <Text style={styles.emoji}>☀️</Text>
             <Text style={styles.title}>朝のリセット診断</Text>

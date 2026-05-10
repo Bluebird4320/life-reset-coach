@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { BackButton } from '../components/BackButton';
 import { Card } from '../components/Card';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ToggleChip } from '../components/ToggleChip';
@@ -80,6 +81,7 @@ export default function TodayActionScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          <BackButton />
           <View style={styles.header}>
             <Text style={styles.emoji}>⚡</Text>
             <Text style={styles.title}>今日の1アクション</Text>
