@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { DailyLog, FutureVision } from '../types';
+import type { DailyActionLog, DailyLog, FutureVision } from '../types';
+import { getTodayKey } from './date';
 
 const FUTURE_VISION_KEY = 'future_vision';
 const DAILY_LOGS_KEY = 'daily_logs';
+const ACTION_LOGS_KEY = 'LIFE_RESET_ACTION_LOGS';
 
 // ── FutureVision ───────────────────────────────────────────────
 
@@ -16,7 +18,7 @@ export async function loadFutureVision(): Promise<FutureVision | null> {
   return JSON.parse(raw) as FutureVision;
 }
 
-// ── DailyLog ───────────────────────────────────────────────────
+// ── DailyLog (既存の朝/夜フロー) ──────────────────────────────
 
 export async function loadAllLogs(): Promise<DailyLog[]> {
   const raw = await AsyncStorage.getItem(DAILY_LOGS_KEY);
@@ -30,7 +32,7 @@ export async function saveDailyLog(log: DailyLog): Promise<void> {
   if (idx >= 0) {
     logs[idx] = log;
   } else {
-    logs.unshift(log); // 新しい順
+    logs.unshift(log);
   }
   await AsyncStorage.setItem(DAILY_LOGS_KEY, JSON.stringify(logs));
 }
@@ -38,6 +40,39 @@ export async function saveDailyLog(log: DailyLog): Promise<void> {
 export async function loadTodayLog(): Promise<DailyLog | null> {
   const today = getTodayDateString();
   const logs = await loadAllLogs();
+  return logs.find((l) => l.date === today) ?? null;
+}
+
+// ── DailyActionLog (最低限アクション) ─────────────────────────
+
+export async function getActionLogs(): Promise<DailyActionLog[]> {
+  const raw = await AsyncStorage.getItem(ACTION_LOGS_KEY);
+  if (!raw) return [];
+  return JSON.parse(raw) as DailyActionLog[];
+}
+
+export async function saveActionLogs(logs: DailyActionLog[]): Promise<void> {
+  await AsyncStorage.setItem(ACTION_LOGS_KEY, JSON.stringify(logs));
+}
+
+export async function upsertActionLog(log: DailyActionLog): Promise<void> {
+  const logs = await getActionLogs();
+  const idx = logs.findIndex((l) => l.date === log.date);
+  if (idx >= 0) {
+    logs[idx] = { ...log, updatedAt: new Date().toISOString() };
+  } else {
+    logs.unshift(log);
+  }
+  await saveActionLogs(logs);
+}
+
+export async function saveTodayActionLog(log: DailyActionLog): Promise<void> {
+  await upsertActionLog(log);
+}
+
+export async function getTodayActionLog(): Promise<DailyActionLog | null> {
+  const today = getTodayKey();
+  const logs = await getActionLogs();
   return logs.find((l) => l.date === today) ?? null;
 }
 

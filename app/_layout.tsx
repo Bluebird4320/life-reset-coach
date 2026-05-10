@@ -20,6 +20,8 @@ export default function RootLayout() {
         <Stack.Screen name="night-review" />
         <Stack.Screen name="result" />
         <Stack.Screen name="history" />
+        <Stack.Screen name="action-review" />
+        <Stack.Screen name="time-dashboard" />
       </Stack>
       <StatusBar style="dark" />
     </>

@@ -22,3 +22,30 @@ export type DailyLog = {
   score: number;
   status: CharacterStatus;
 };
+
+// ── 最低限アクション ────────────────────────────────────────────
+
+export type ActionStatus = 'done' | 'partial' | 'not_done';
+
+export type DailyActionLog = {
+  id: string;
+  date: string; // YYYY-MM-DD
+
+  actionTitle: string;
+  actionReason: string;
+
+  plannedMinutes: number;
+  actualMinutes: number;
+
+  status: ActionStatus;
+
+  reflectionText: string;
+  blockerText: string;
+  nextFixText: string;
+
+  score: number;
+  statusType: CharacterStatus;
+
+  createdAt: string;
+  updatedAt: string;
+};
