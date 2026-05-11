@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "life-reset-coach",
-    "slug": "life-reset-coach",
+    "name": "OneStep",
+    "slug": "onestep",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "liferesetcoach",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "scheme": "onestep",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true
     },
@@ -38,11 +38,18 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#7B5EA7"
+        }
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": false
     }
   }
 }

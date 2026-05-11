@@ -1,27 +1,29 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { initDB } from '../db/client';
+import { useSettingsStore } from '../store/settingsStore';
 
 export default function RootLayout() {
+  const load = useSettingsStore((s) => s.load);
+  const loaded = useSettingsStore((s) => s.loaded);
+
+  useEffect(() => {
+    // DB 初期化と設定ロードを並行実行
+    initDB().catch(console.error);
+    load();
+  }, []);
+
+  // 設定ロード完了まで何も表示しない
+  if (!loaded) return null;
+
   return (
     <>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: '#F5F7FF' },
-          animation: 'slide_from_right',
-        }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="future-vision-setup" />
-        <Stack.Screen name="home" />
-        <Stack.Screen name="morning-reset" />
-        <Stack.Screen name="today-action" />
-        <Stack.Screen name="night-review" />
-        <Stack.Screen name="result" />
-        <Stack.Screen name="history" />
-        <Stack.Screen name="action-review" />
-        <Stack.Screen name="time-dashboard" />
+      {/* animation / presentation の string 型は Expo Go の New Arch で不安定なため省略 */}
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="record" />
       </Stack>
       <StatusBar style="dark" />
     </>
