@@ -16,17 +16,19 @@ import { z } from 'zod';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Chip } from '../../components/ui/Chip';
-import { CATEGORIES, CategoryId } from '../../constants/categories';
+import { CATEGORIES } from '../../constants/categories';
 import { Colors, Radius, Spacing } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { useGoalStore } from '../../store/goalStore';
 import { getTodayKey } from '../../lib/dateUtils';
 
-// バリデーションスキーマ
+// カテゴリは別途ローカルstateで管理するため schema から除外
 const schema = z.object({
   vision: z.string().min(1, 'ビジョンを入力してください').max(100, '100文字以内で入力してください'),
-  category: z.string().min(1, 'カテゴリを選択してください'),
-  dailyMinutes: z.number().min(5).max(60),
+  dailyMinutes: z
+    .number()
+    .min(1, '1分以上入力してください')
+    .max(300, '300分以内で入力してください'),
   deadline: z.string().optional(),
 });
 
@@ -42,6 +44,14 @@ export default function GoalSetupScreen() {
   const [decreaseInput, setDecreaseInput] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // カテゴリ複数選択
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [customCategory, setCustomCategory] = useState('');
+  const [categoryError, setCategoryError] = useState('');
+
+  // 目標時間カスタム入力
+  const [customMinutesText, setCustomMinutesText] = useState('');
+
   const {
     control,
     handleSubmit,
@@ -50,11 +60,17 @@ export default function GoalSetupScreen() {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { vision: '', category: '', dailyMinutes: 15 },
+    defaultValues: { vision: '', dailyMinutes: 15 },
   });
 
-  const selectedCategory = watch('category') as CategoryId | '';
   const dailyMinutes = watch('dailyMinutes');
+
+  const toggleCategory = (id: string) => {
+    setCategoryError('');
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  };
 
   const addAction = (
     list: string[],
@@ -73,13 +89,23 @@ export default function GoalSetupScreen() {
   };
 
   const onSubmit = async (values: FormValues) => {
+    if (selectedCategories.length === 0) {
+      setCategoryError('カテゴリを1つ以上選択してください');
+      return;
+    }
+
     setSaving(true);
     try {
+      // 'other' をカスタム入力テキストに置き換え
+      const finalCategories = selectedCategories.map((id) =>
+        id === 'other' ? (customCategory.trim() || 'その他') : id
+      );
+
       const now = new Date().toISOString();
       await upsertGoal({
         id: getTodayKey(),
         vision: values.vision,
-        category: values.category,
+        category: JSON.stringify(finalCategories),
         increaseActions: JSON.stringify(increaseActions),
         decreaseActions: JSON.stringify(decreaseActions),
         deadline: values.deadline ?? null,
@@ -135,25 +161,34 @@ export default function GoalSetupScreen() {
             {errors.vision && <Text style={styles.errorText}>{errors.vision.message}</Text>}
           </Card>
 
-          {/* カテゴリ */}
+          {/* カテゴリ（複数選択可） */}
           <Card style={styles.fieldCard}>
-            <Text style={styles.fieldLabel}>カテゴリ</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipScroll}
-            >
+            <Text style={styles.fieldLabel}>カテゴリ（複数選択可）</Text>
+            <View style={styles.chipWrap}>
               {CATEGORIES.map((cat) => (
                 <Chip
                   key={cat.id}
                   label={`${cat.emoji} ${cat.label}`}
-                  selected={selectedCategory === cat.id}
-                  onPress={() => setValue('category', cat.id)}
+                  selected={selectedCategories.includes(cat.id)}
+                  onPress={() => toggleCategory(cat.id)}
                   selectedColor={cat.color}
                 />
               ))}
-            </ScrollView>
-            {errors.category && <Text style={styles.errorText}>{errors.category.message}</Text>}
+            </View>
+
+            {/* その他：カスタム入力 */}
+            {selectedCategories.includes('other') && (
+              <TextInput
+                style={styles.customInput}
+                placeholder="カテゴリ名を入力（例：趣味、読書）"
+                placeholderTextColor={Colors.primaryMid}
+                value={customCategory}
+                onChangeText={setCustomCategory}
+                maxLength={30}
+              />
+            )}
+
+            {categoryError ? <Text style={styles.errorText}>{categoryError}</Text> : null}
           </Card>
 
           {/* 増やしたい行動 */}
@@ -240,11 +275,43 @@ export default function GoalSetupScreen() {
                 <Chip
                   key={m}
                   label={`${m}分`}
-                  selected={dailyMinutes === m}
-                  onPress={() => setValue('dailyMinutes', m)}
+                  selected={dailyMinutes === m && customMinutesText === ''}
+                  onPress={() => {
+                    setValue('dailyMinutes', m, { shouldValidate: true });
+                    setCustomMinutesText('');
+                  }}
                 />
               ))}
             </View>
+
+            {/* カスタム時間入力 */}
+            <View style={styles.minuteCustomRow}>
+              <TextInput
+                style={[
+                  styles.minuteCustomInput,
+                  errors.dailyMinutes && styles.inputError,
+                ]}
+                placeholder="その他"
+                placeholderTextColor={Colors.primaryMid}
+                keyboardType="numeric"
+                value={customMinutesText}
+                onChangeText={(text) => {
+                  setCustomMinutesText(text);
+                  const n = parseInt(text, 10);
+                  if (!isNaN(n) && n >= 1 && n <= 300) {
+                    setValue('dailyMinutes', n, { shouldValidate: true });
+                  } else if (text === '') {
+                    setValue('dailyMinutes', 15, { shouldValidate: true });
+                  }
+                }}
+                maxLength={3}
+              />
+              <Text style={styles.minuteUnit}>分</Text>
+            </View>
+
+            {errors.dailyMinutes && (
+              <Text style={styles.errorText}>{errors.dailyMinutes.message}</Text>
+            )}
           </Card>
 
           <Button
@@ -288,8 +355,17 @@ const styles = StyleSheet.create({
   },
   inputError: { borderColor: Colors.danger },
   errorText: { ...Typography.caption, color: Colors.danger },
-  chipScroll: { gap: Spacing.sm, paddingVertical: Spacing.xs },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  customInput: {
+    backgroundColor: Colors.primaryLight,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: 14,
+    color: Colors.primaryDark,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+  },
   tagWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   addRow: { flexDirection: 'row', gap: Spacing.sm, alignItems: 'center' },
   tagInput: {
@@ -304,5 +380,24 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   addBtn: { paddingVertical: Spacing.sm, paddingHorizontal: Spacing.md },
+  minuteCustomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  minuteCustomInput: {
+    width: 80,
+    backgroundColor: Colors.primaryLight,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: 14,
+    color: Colors.primaryDark,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    textAlign: 'center',
+  },
+  minuteUnit: { ...Typography.body, color: Colors.primaryDark },
   submitBtn: { marginTop: Spacing.sm },
 });

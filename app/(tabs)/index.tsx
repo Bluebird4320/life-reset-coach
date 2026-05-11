@@ -60,7 +60,22 @@ export default function TodayHomeScreen() {
   );
 
   const streak = calcStreak(allRecords);
-  const categoryData = CATEGORIES.find((c) => c.id === (goal?.category ?? ''));
+
+  // カテゴリをパース（複数選択・後方互換対応）
+  const parsedCategoryIds = (() => {
+    if (!goal) return [];
+    try {
+      const p = JSON.parse(goal.category);
+      return Array.isArray(p) ? p : [goal.category];
+    } catch {
+      return [goal.category];
+    }
+  })();
+  const firstCat = CATEGORIES.find((c) => c.id === parsedCategoryIds[0]);
+  const categoryEmoji = firstCat?.emoji ?? '⭐';
+  const categoryLabel = parsedCategoryIds
+    .map((id) => CATEGORIES.find((c) => c.id === id)?.label ?? id)
+    .join(' / ');
 
   // 今日のアクションを保存
   const handleSaveAction = async () => {
@@ -147,8 +162,8 @@ export default function TodayHomeScreen() {
           {/* ビジョンカード */}
           <VisionCard
             vision={goal.vision}
-            categoryEmoji={categoryData?.emoji ?? '⭐'}
-            categoryLabel={categoryData?.label ?? goal.category}
+            categoryEmoji={categoryEmoji}
+            categoryLabel={categoryLabel}
             streakDays={streak.current}
           />
 
