@@ -7,7 +7,7 @@ type RecordState = {
   allRecords: Record[];
   fetchTodayRecord: (date: string) => Promise<void>;
   fetchAllRecords: () => Promise<void>;
-  saveRecord: (data: RecordInsert) => Promise<void>;
+  saveRecord: (data: RecordInsert) => Promise<string>;
   setAiCoachMsg: (recordId: string, msg: string) => Promise<void>;
 };
 
@@ -26,9 +26,10 @@ export const useRecordStore = create<RecordState>((set, get) => ({
   },
 
   saveRecord: async (data) => {
-    await saveRecord(data);
+    const recordId = await saveRecord(data);
     const rec = await getTodayRecord(data.date);
     set({ todayRecord: rec ?? null });
+    return recordId;
   },
 
   setAiCoachMsg: async (recordId, msg) => {

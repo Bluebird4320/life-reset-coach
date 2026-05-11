@@ -20,10 +20,11 @@ import { Colors, Radius, Spacing } from '../constants/colors';
 import { Typography } from '../constants/typography';
 import { updateStreak } from '../db/queries';
 import { useAiCoach } from '../hooks/useAiCoach';
+import { calcStreak } from '../hooks/useStreak';
 import { formatSeconds, getTodayKey } from '../lib/dateUtils';
 import { useGoalStore } from '../store/goalStore';
 import { useRecordStore } from '../store/recordStore';
-import { calcStreak } from '../hooks/useStreak';
+import { useSettingsStore } from '../store/settingsStore';
 
 type RecordStatus = 'done' | 'partial' | 'failed';
 
@@ -38,20 +39,23 @@ export default function RecordScreen() {
     status: RecordStatus;
     elapsed: string;
     actionId: string;
+    actionTitle: string;
     date: string;
   }>();
 
   const { goal } = useGoalStore();
-  const { saveRecord, setAiCoachMsg, allRecords } = useRecordStore();
+  const { saveRecord, setAiCoachMsg, allRecords, todayRecord } = useRecordStore();
+  const { aiCoachEnabled } = useSettingsStore();
   const { generate, loading: aiLoading } = useAiCoach();
 
   const today = params.date || getTodayKey();
   const initialElapsed = parseInt(params.elapsed ?? '0', 10);
 
+  // 既存記録がある場合はプリフィル（振り返り更新フロー）
   const [status, setStatus] = useState<RecordStatus>(params.status ?? 'done');
-  const [mood, setMood] = useState<Mood | null>(null);
-  const [memo, setMemo] = useState('');
-  const [nextAction, setNextAction] = useState('');
+  const [mood, setMood] = useState<Mood | null>((todayRecord?.mood as Mood) ?? null);
+  const [memo, setMemo] = useState(todayRecord?.memo ?? '');
+  const [nextAction, setNextAction] = useState(todayRecord?.nextAction ?? '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -63,11 +67,11 @@ export default function RecordScreen() {
     setSaving(true);
     try {
       const now = new Date().toISOString();
-      const recordId = `rec-${today}-${Date.now()}`;
+      const newRecordId = `rec-${today}-${Date.now()}`;
 
-      // 1. 記録を保存（AIコーチは後で追加）
-      await saveRecord({
-        id: recordId,
+      // 1. 記録を保存。更新の場合は既存IDが返される
+      const actualRecordId = await saveRecord({
+        id: newRecordId,
         actionId: params.actionId,
         date: today,
         elapsedSeconds: initialElapsed,
@@ -83,19 +87,19 @@ export default function RecordScreen() {
       const isSuccess = status === 'done' || status === 'partial';
       await updateStreak(today, isSuccess);
 
-      // 3. AIコーチメッセージを生成（失敗してもアプリを止めない）
-      if (goal) {
+      // 3. AIコーチメッセージを生成（設定ON かつ goal あり）
+      if (aiCoachEnabled && goal) {
         const streak = calcStreak(allRecords);
         const msg = await generate({
           vision: goal.vision,
-          actionTitle: params.actionId,
+          actionTitle: params.actionTitle || params.actionId,
           elapsedMinutes: Math.floor(initialElapsed / 60),
           status,
           streakDays: streak.current,
           mood: mood ?? 'normal',
         });
         if (msg) {
-          await setAiCoachMsg(recordId, msg);
+          await setAiCoachMsg(actualRecordId, msg);
         }
       }
 
@@ -129,6 +133,14 @@ export default function RecordScreen() {
               <Text style={styles.closeBtn}>✕</Text>
             </TouchableOpacity>
           </View>
+
+          {/* アクション名 */}
+          {params.actionTitle ? (
+            <Card>
+              <Text style={styles.actionTitleLabel}>今日のアクション</Text>
+              <Text style={styles.actionTitleText}>{params.actionTitle}</Text>
+            </Card>
+          ) : null}
 
           {/* 実行時間 */}
           <Card>
@@ -240,6 +252,8 @@ const styles = StyleSheet.create({
   },
   title: { ...Typography.screenTitle },
   closeBtn: { fontSize: 20, color: Colors.textMuted },
+  actionTitleLabel: { ...Typography.label, marginBottom: 4 },
+  actionTitleText: { ...Typography.cardTitle },
   elapsedRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

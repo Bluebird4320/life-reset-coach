@@ -37,7 +37,7 @@ const MINUTE_OPTIONS = [5, 10, 15, 20, 30, 45, 60];
 
 export default function TodayHomeScreen() {
   const { goal, fetchGoal } = useGoalStore();
-  const { todayAction, fetchTodayAction } = useActionStore();
+  const { todayAction, fetchTodayAction, updateTitle } = useActionStore();
   const { todayRecord, allRecords, fetchTodayRecord, fetchAllRecords } = useRecordStore();
   const timer = useTimer();
 
@@ -77,26 +77,32 @@ export default function TodayHomeScreen() {
     .map((id) => CATEGORIES.find((c) => c.id === id)?.label ?? id)
     .join(' / ');
 
-  // 今日のアクションを保存
+  // アクションを保存（新規作成 or 既存更新）
   const handleSaveAction = async () => {
     if (!goal || !actionTitle.trim()) {
-      Alert.alert('入力してください', '今日やる行動を入力してください');
+      Alert.alert('入力してください', '行動を入力してください');
       return;
     }
     setSavingAction(true);
     try {
-      const now = new Date().toISOString();
-      await createTodayAction({
-        id: `action-${today}`,
-        goalId: goal.id,
-        date: today,
-        title: actionTitle.trim(),
-        targetMinutes: actionMinutes,
-        createdAt: now,
-      });
-      await fetchTodayAction(today);
+      if (todayAction) {
+        // 既存アクションのタイトル・時間を更新
+        await updateTitle(todayAction.id, actionTitle.trim(), actionMinutes);
+      } else {
+        const now = new Date().toISOString();
+        await createTodayAction({
+          id: `action-${today}`,
+          goalId: goal.id,
+          date: today,
+          title: actionTitle.trim(),
+          targetMinutes: actionMinutes,
+          createdAt: now,
+        });
+        await fetchTodayAction(today);
+      }
       setShowActionInput(false);
       setActionTitle('');
+      timer.reset();
     } catch (e) {
       console.error('Action save error:', e);
     } finally {
@@ -112,6 +118,7 @@ export default function TodayHomeScreen() {
         status,
         elapsed: String(timer.elapsed),
         actionId: todayAction?.id ?? '',
+        actionTitle: todayAction?.title ?? '',
         date: today,
       },
     });
@@ -168,7 +175,51 @@ export default function TodayHomeScreen() {
           />
 
           {/* 今日のアクションカード */}
-          {todayAction ? (
+          {showActionInput ? (
+            /* 行動入力フォーム（新規作成 or 変更） */
+            <Card style={styles.actionFormCard}>
+              <Text style={styles.inputSectionLabel}>
+                {todayAction ? '行動を変更する' : '今日やる最低限の行動'}
+              </Text>
+              <TextInput
+                style={styles.actionInput}
+                placeholder="例：副業の企画を30分だけ書き出す"
+                placeholderTextColor={Colors.primaryMid}
+                value={actionTitle}
+                onChangeText={setActionTitle}
+                multiline
+                textAlignVertical="top"
+              />
+              <Text style={[styles.inputSectionLabel, styles.minuteLabel]}>目標時間</Text>
+              <View style={styles.chipWrap}>
+                {MINUTE_OPTIONS.map((m) => (
+                  <Chip
+                    key={m}
+                    label={`${m}分`}
+                    selected={actionMinutes === m}
+                    onPress={() => setActionMinutes(m)}
+                  />
+                ))}
+              </View>
+              <Button
+                label={savingAction ? '保存中...' : (todayAction ? '行動を更新する →' : '今日はこれをやる！ →')}
+                onPress={handleSaveAction}
+                disabled={savingAction}
+                loading={savingAction}
+                style={styles.saveActionBtn}
+              />
+              {todayAction && (
+                <TouchableOpacity
+                  onPress={() => setShowActionInput(false)}
+                  activeOpacity={0.7}
+                  style={styles.cancelLink}
+                >
+                  <Text style={styles.cancelLinkText}>キャンセル</Text>
+                </TouchableOpacity>
+              )}
+            </Card>
+          ) : todayAction ? (
+            /* アクションあり：通常表示 */
             <Card style={styles.actionSection}>
               <ActionCard
                 title={todayAction.title}
@@ -202,6 +253,7 @@ export default function TodayHomeScreen() {
                           status: todayRecord.status,
                           elapsed: String(todayRecord.elapsedSeconds),
                           actionId: todayAction.id,
+                          actionTitle: todayAction.title,
                           date: today,
                         },
                       })
@@ -218,7 +270,11 @@ export default function TodayHomeScreen() {
 
               {/* 行動変更リンク */}
               <TouchableOpacity
-                onPress={() => setShowActionInput(true)}
+                onPress={() => {
+                  setActionTitle(todayAction.title);
+                  setActionMinutes(todayAction.targetMinutes ?? 15);
+                  setShowActionInput(true);
+                }}
                 activeOpacity={0.7}
                 style={styles.changeLink}
               >
@@ -228,49 +284,14 @@ export default function TodayHomeScreen() {
           ) : (
             /* アクション未設定 */
             <Card style={styles.noActionCard}>
-              {!showActionInput ? (
-                <>
-                  <Text style={styles.noActionEmoji}>⚡</Text>
-                  <Text style={styles.noActionTitle}>今日の最低限アクションを決めましょう</Text>
-                  <Text style={styles.noActionHint}>最小の一歩が未来を変えます</Text>
-                  <Button
-                    label="行動を決める →"
-                    onPress={() => setShowActionInput(true)}
-                    style={styles.noActionBtn}
-                  />
-                </>
-              ) : (
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-                  <Text style={styles.inputSectionLabel}>今日やる最低限の行動</Text>
-                  <TextInput
-                    style={styles.actionInput}
-                    placeholder="例：副業の企画を30分だけ書き出す"
-                    placeholderTextColor={Colors.primaryMid}
-                    value={actionTitle}
-                    onChangeText={setActionTitle}
-                    multiline
-                    textAlignVertical="top"
-                  />
-                  <Text style={[styles.inputSectionLabel, styles.minuteLabel]}>目標時間</Text>
-                  <View style={styles.chipWrap}>
-                    {MINUTE_OPTIONS.map((m) => (
-                      <Chip
-                        key={m}
-                        label={`${m}分`}
-                        selected={actionMinutes === m}
-                        onPress={() => setActionMinutes(m)}
-                      />
-                    ))}
-                  </View>
-                  <Button
-                    label={savingAction ? '保存中...' : '今日はこれをやる！ →'}
-                    onPress={handleSaveAction}
-                    disabled={savingAction}
-                    loading={savingAction}
-                    style={styles.saveActionBtn}
-                  />
-                </KeyboardAvoidingView>
-              )}
+              <Text style={styles.noActionEmoji}>⚡</Text>
+              <Text style={styles.noActionTitle}>今日の最低限アクションを決めましょう</Text>
+              <Text style={styles.noActionHint}>最小の一歩が未来を変えます</Text>
+              <Button
+                label="行動を決める →"
+                onPress={() => setShowActionInput(true)}
+                style={styles.noActionBtn}
+              />
             </Card>
           )}
 
@@ -322,6 +343,7 @@ const styles = StyleSheet.create({
   streakBadgeText: { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
 
   actionSection: { gap: Spacing.lg },
+  actionFormCard: { gap: Spacing.sm },
   doneBox: {
     backgroundColor: '#F1FBF2',
     borderRadius: Radius.md,
@@ -332,6 +354,8 @@ const styles = StyleSheet.create({
   updateLink: { ...Typography.caption, color: Colors.primary, fontWeight: '600' },
   changeLink: { alignItems: 'center', paddingTop: Spacing.xs },
   changeLinkText: { ...Typography.caption, color: Colors.textMuted, fontWeight: '600' },
+  cancelLink: { alignItems: 'center', paddingTop: Spacing.xs },
+  cancelLinkText: { ...Typography.caption, color: Colors.textMuted },
 
   noActionCard: { alignItems: 'center', gap: Spacing.md, paddingVertical: Spacing.xxl },
   noActionEmoji: { fontSize: 48 },

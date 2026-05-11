@@ -55,14 +55,17 @@ export async function getTodayRecord(date: string) {
   return rows[0] ?? null;
 }
 
-/** 記録を保存（既存があれば上書き） */
-export async function saveRecord(data: RecordInsert): Promise<void> {
+/** 記録を保存（既存があれば上書き）。実際に使われた record ID を返す */
+export async function saveRecord(data: RecordInsert): Promise<string> {
   const existing = await getTodayRecord(data.date);
   if (existing) {
-    await db.update(records).set(data).where(eq(records.id, existing.id));
-  } else {
-    await db.insert(records).values(data);
+    // ID と createdAt はそのまま維持し、他フィールドだけ更新
+    const { id: _id, createdAt: _createdAt, ...updateFields } = data;
+    await db.update(records).set(updateFields).where(eq(records.id, existing.id));
+    return existing.id;
   }
+  await db.insert(records).values(data);
+  return data.id;
 }
 
 /** AIコーチメッセージを更新 */
