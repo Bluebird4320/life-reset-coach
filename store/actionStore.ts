@@ -7,6 +7,7 @@ type ActionState = {
   fetchTodayAction: (date: string) => Promise<void>;
   createAction: (data: ActionInsert) => Promise<void>;
   updateTitle: (id: string, title: string, targetMinutes: number) => Promise<void>;
+  reset: () => void;
 };
 
 export const useActionStore = create<ActionState>((set) => ({
@@ -27,4 +28,6 @@ export const useActionStore = create<ActionState>((set) => ({
     const action = await getTodayAction(new Date().toISOString().split('T')[0]);
     set({ todayAction: action });
   },
+
+  reset: () => set({ todayAction: null }),
 }));

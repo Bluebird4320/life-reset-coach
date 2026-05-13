@@ -7,6 +7,7 @@ type GoalState = {
   loading: boolean;
   fetchGoal: () => Promise<void>;
   upsertGoal: (data: GoalInsert) => Promise<void>;
+  reset: () => void;
 };
 
 export const useGoalStore = create<GoalState>((set) => ({
@@ -28,4 +29,6 @@ export const useGoalStore = create<GoalState>((set) => ({
     const goal = await getLatestGoal();
     set({ goal });
   },
+
+  reset: () => set({ goal: null }),
 }));

@@ -4,11 +4,16 @@ import { Card } from '../../components/ui/Card';
 import { Toggle } from '../../components/ui/Toggle';
 import { Colors, Radius, Spacing } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
+import { deleteAllData } from '../../db/queries';
+import { useActionStore } from '../../store/actionStore';
 import { useGoalStore } from '../../store/goalStore';
+import { useRecordStore } from '../../store/recordStore';
 import { useSettingsStore } from '../../store/settingsStore';
 
 export default function SettingsScreen() {
-  const { goal } = useGoalStore();
+  const { goal, reset: resetGoal } = useGoalStore();
+  const { reset: resetAction } = useActionStore();
+  const { reset: resetRecord } = useRecordStore();
   const {
     notificationsEnabled,
     weeklyReviewEnabled,
@@ -26,9 +31,20 @@ export default function SettingsScreen() {
           text: '削除する',
           style: 'destructive',
           onPress: async () => {
-            // TODO: Phase 2 で全データ削除を実装
-            await update({ onboardingDone: false });
-            router.replace('/(auth)/onboarding');
+            try {
+              // DB の全テーブルを削除
+              await deleteAllData();
+              // メモリ上の store もリセット
+              resetGoal();
+              resetAction();
+              resetRecord();
+              // onboarding フラグをリセット
+              await update({ onboardingDone: false });
+              router.replace('/(auth)/onboarding');
+            } catch (e) {
+              console.error('Delete all data error:', e);
+              Alert.alert('エラー', 'データの削除に失敗しました。もう一度お試しください。');
+            }
           },
         },
       ]

@@ -84,6 +84,16 @@ export async function getRecordsBetween(from: string, to: string) {
   return all.filter((r) => r.date >= from && r.date <= to);
 }
 
+// ── 全データ削除 ────────────────────────────────────────────
+
+/** 全テーブルのデータを削除する */
+export async function deleteAllData(): Promise<void> {
+  await db.delete(records);
+  await db.delete(actions);
+  await db.delete(goals);
+  await db.delete(streaks);
+}
+
 // ── Streaks ─────────────────────────────────────────────────
 
 const STREAK_ID = 'singleton';
