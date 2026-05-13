@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { z } from 'zod';
@@ -134,7 +135,12 @@ export default function GoalSetupScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <Text style={styles.title}>目標を設定しよう</Text>
+            <View style={styles.headerTop}>
+              <Text style={styles.title}>目標を設定しよう</Text>
+              <TouchableOpacity onPress={() => router.replace('/(tabs)')} activeOpacity={0.7}>
+                <Text style={styles.skipLink}>スキップ</Text>
+              </TouchableOpacity>
+            </View>
             <Text style={styles.subtitle}>叶えたい未来を言葉にしましょう</Text>
           </View>
 
@@ -321,6 +327,14 @@ export default function GoalSetupScreen() {
             loading={saving}
             style={styles.submitBtn}
           />
+
+          <TouchableOpacity
+            onPress={() => router.replace('/(tabs)')}
+            activeOpacity={0.7}
+            style={styles.skipBottom}
+          >
+            <Text style={styles.skipBottomText}>あとで設定する</Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -337,8 +351,23 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   header: { gap: Spacing.xs },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   title: { ...Typography.screenTitle },
   subtitle: { ...Typography.caption },
+  skipLink: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    fontWeight: '600',
+  },
+  skipBottom: { alignItems: 'center', paddingVertical: Spacing.sm },
+  skipBottomText: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+  },
   fieldCard: { gap: Spacing.sm },
   fieldLabel: { ...Typography.cardTitle },
   fieldHint: { ...Typography.caption, marginTop: -Spacing.xs },
